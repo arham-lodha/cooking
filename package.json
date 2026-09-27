@@ -1,0 +1,8 @@
+{
+  "name": "cooking-site",
+  "private": true,
+  "description": "Static site generator for the cooking notes repo (meal-prep + groceries), for GitHub Pages.",
+  "scripts": {
+    "build": "node site/build.js"
+  }
+}

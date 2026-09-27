@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shopping List · Cooking</title>
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header class="site-header">
+  <a class="brand" href="../index.html">🍳 Cooking</a>
+  <nav><a href="../index.html">Home</a><a href="../groceries/shopping-list.html" class="active">Shopping List</a><a href="../groceries/inventory.html">Inventory</a><a href="../groceries/purchases.html">Purchases</a></nav>
+</header>
+<main>
+<h1>Shopping List (Pending)</h1>
+<p>Items queued for an upcoming trip, grouped by store. Check items off as bought; once a trip happens, move it into a dated entry in <code>PURCHASES.md</code> and update <code>INVENTORY.md</code>, then clear this section.</p>
+<h2>Trader Joe's — next trip</h2>
+<ul class="checklist">
+<li><label><input type="checkbox" data-key="groceries-shopping-list.html:0" ><span>Frozen peas (small bag)</span></label></li>
+<li><label><input type="checkbox" data-key="groceries-shopping-list.html:1" ><span>Tomatoes (2), or a can of crushed tomato</span></label></li>
+<li><label><input type="checkbox" data-key="groceries-shopping-list.html:2" ><span>Naan or roti (store-bought) — side for Matar Paneer, replacing rice this week</span></label></li>
+<li><label><input type="checkbox" data-key="groceries-shopping-list.html:3" ><span>Lemon (1)</span></label></li>
+<li><label><input type="checkbox" data-key="groceries-shopping-list.html:4" ><span>Fresh cilantro</span></label></li>
+<li><label><input type="checkbox" data-key="groceries-shopping-list.html:5" ><span>Paprika, if you don't already have Kashmiri chili powder on hand</span></label></li>
+<li><label><input type="checkbox" data-key="groceries-shopping-list.html:6" ><span>Peanuts, optional (poha topping)</span></label></li>
+</ul>
+<p><em>For: Week of 2026-09-28 meal prep — <strong>Poha</strong> + <strong>Matar Paneer</strong>.</em></p>
+<h2>Indian store — in ~2 weeks (early Oct 2026)</h2>
+<ul class="checklist">
+<li><label><input type="checkbox" data-key="groceries-shopping-list.html:7" ><span>Turmeric</span></label></li>
+<li><label><input type="checkbox" data-key="groceries-shopping-list.html:8" ><span>Kasuri methi (dried fenugreek leaves), if not already in stock</span></label></li>
+<li><label><input type="checkbox" data-key="groceries-shopping-list.html:9" ><span>Kashmiri chili powder, if not already in stock</span></label></li>
+<li><label><input type="checkbox" data-key="groceries-shopping-list.html:10" ><span>Curry leaves, optional (poha)</span></label></li>
+</ul>
+<p><em>Check <code>groceries/INVENTORY.md</code> spice stock before buying — you already have most Indian spices.</em></p>
+</main>
+<footer class="site-footer">Generated from Markdown — <code>node site/build.js</code></footer>
+<script src="../app.js"></script>
+</body>
+</html>
