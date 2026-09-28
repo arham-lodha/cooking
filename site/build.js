@@ -31,7 +31,11 @@ function renderLink(text, url, ctx) {
   if (/^https?:\/\//.test(url)) {
     return `<a href="${url}" target="_blank" rel="noopener">${text}</a>`;
   }
-  if (/recipes\//.test(url) || /CLAUDE\.md/.test(url) || /templates\//.test(url)) {
+  const recipeMatch = /recipes\/([^)]+?)\.md$/.exec(url);
+  if (recipeMatch) {
+    return `<a href="${ctx.prefix}recipes/${recipeMatch[1]}.html">${text}</a>`;
+  }
+  if (/CLAUDE\.md/.test(url) || /templates\//.test(url)) {
     // Not part of the site yet -- render as plain emphasized text.
     return `<strong>${text}</strong>`;
   }
@@ -180,6 +184,7 @@ function navLink(href, label, current) {
 function page({ title, prefix, body, current }) {
   const nav = [
     navLink(`${prefix}index.html`, 'Home', current),
+    navLink(`${prefix}recipes/index.html`, 'Recipes', current),
     navLink(`${prefix}groceries/shopping-list.html`, 'Shopping List', current),
     navLink(`${prefix}groceries/inventory.html`, 'Inventory', current),
     navLink(`${prefix}groceries/purchases.html`, 'Purchases', current),
@@ -237,6 +242,31 @@ function weekDateFromFilename(fname) {
   return m ? m[1] : null;
 }
 
+function capitalize(s) {
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+function walkRecipes() {
+  const recipesDir = path.join(ROOT, 'recipes');
+  if (!fs.existsSync(recipesDir)) return [];
+  const cuisines = fs
+    .readdirSync(recipesDir)
+    .filter((f) => fs.statSync(path.join(recipesDir, f)).isDirectory())
+    .sort();
+  const recipes = [];
+  for (const cuisine of cuisines) {
+    const dir = path.join(recipesDir, cuisine);
+    const files = fs.readdirSync(dir).filter((f) => f.endsWith('.md')).sort();
+    for (const file of files) {
+      const slug = file.replace(/\.md$/, '');
+      const md = fs.readFileSync(path.join(dir, file), 'utf8');
+      const titleMatch = /^#\s+(.*)/m.exec(md);
+      recipes.push({ cuisine, slug, title: titleMatch ? titleMatch[1].trim() : slug, md });
+    }
+  }
+  return recipes;
+}
+
 // ---------------------------------------------------------------------
 // build
 // ---------------------------------------------------------------------
@@ -275,6 +305,46 @@ function build() {
     writeFile(`meal-prep/${date}.html`, html);
     weeks.push(date);
   }
+
+  // ---- recipes ----
+  const recipes = walkRecipes();
+  for (const r of recipes) {
+    const ctx = { prefix: '../../', pageKey: `recipe-${r.cuisine}-${r.slug}`, checkboxCounter: 0 };
+    const body = renderMarkdown(r.md, ctx);
+    const html = page({
+      title: r.title,
+      prefix: '../../',
+      current: '../../recipes/index.html',
+      body,
+    });
+    writeFile(`recipes/${r.cuisine}/${r.slug}.html`, html);
+  }
+
+  const byCuisine = {};
+  for (const r of recipes) {
+    (byCuisine[r.cuisine] = byCuisine[r.cuisine] || []).push(r);
+  }
+  let recipesBody = '<h1>Recipes</h1>';
+  const cuisineNames = Object.keys(byCuisine).sort();
+  if (!cuisineNames.length) {
+    recipesBody += '<p>No recipes saved yet.</p>';
+  } else {
+    for (const cuisine of cuisineNames) {
+      recipesBody += `
+<section class="card">
+  <h2>${escapeHtml(capitalize(cuisine))}</h2>
+  <ul class="link-list">
+    ${byCuisine[cuisine]
+      .map((r) => `<li><a href="${r.cuisine}/${r.slug}.html">${escapeHtml(r.title)}</a></li>`)
+      .join('\n    ')}
+  </ul>
+</section>`;
+    }
+  }
+  writeFile(
+    'recipes/index.html',
+    page({ title: 'Recipes', prefix: '../', current: '../recipes/index.html', body: recipesBody })
+  );
 
   // ---- groceries ----
   const groceriesDir = path.join(ROOT, 'groceries');
@@ -335,6 +405,12 @@ function build() {
 
   homeBody += `
 <section class="card">
+  <h2>Recipes</h2>
+  <p><a class="button" href="recipes/index.html">Browse Recipes →</a></p>
+</section>`;
+
+  homeBody += `
+<section class="card">
   <h2>Groceries</h2>
   <ul class="link-list">
     <li><a href="groceries/shopping-list.html">Shopping List</a></li>
@@ -360,7 +436,9 @@ function build() {
   fs.copyFileSync(path.join(__dirname, 'app.js'), path.join(DOCS, 'app.js'));
   fs.writeFileSync(path.join(DOCS, '.nojekyll'), '');
 
-  console.log(`Built ${weeks.length} meal-prep week(s) and ${Object.keys(groceryFiles).length} grocery page(s) into docs/`);
+  console.log(
+    `Built ${weeks.length} meal-prep week(s), ${recipes.length} recipe(s), and ${Object.keys(groceryFiles).length} grocery page(s) into docs/`
+  );
 }
 
 build();
